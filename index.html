@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Cube</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script type="module">
+        // Use CDN for three and OrbitControls
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/controls/OrbitControls.js';
+
+        // Keep your local modules
+        import { Wall } from './src/primitives/Wall.js';
+        import { BooleanOperation } from './src/operations/Boolean.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(3, 3, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // --- Create cubes using your Wall primitive ---
+        const cube1 = new Wall({ width: 1, height: 1, depth: 1 });
+        const cube2 = new Wall({ width: 0.5, height: 0.5, depth: 0.5 });
+        cube2.mesh.position.set(0.75, 0.75, 0.75);
+
+        // Merge them using your BooleanOperation helper
+        const mergedCube = BooleanOperation.mergeMeshes([cube1.mesh, cube2.mesh]);
+        scene.add(mergedCube);
+
+        // Light
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            mergedCube.rotation.x += 0.01;
+            mergedCube.rotation.y += 0.01;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
+
